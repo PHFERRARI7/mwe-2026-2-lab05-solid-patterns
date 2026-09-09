@@ -1,5 +1,4 @@
 using Faturamento.Api.Dominio;
-using Faturamento.Api.Infraestrutura;
 
 namespace Faturamento.Api.Aplicacao;
 
@@ -19,10 +18,9 @@ namespace Faturamento.Api.Aplicacao;
 /// </remarks>
 public class FaturaService
 {
-    // TODO-4: tipo concreto. Deveria ser a abstração IFaturaRepository.
-    private readonly EfFaturaRepository _repositorio;
+    private readonly IFaturaRepository _repositorio;
 
-    public FaturaService(EfFaturaRepository repositorio)
+    public FaturaService(IFaturaRepository repositorio)
     {
         _repositorio = repositorio;
     }

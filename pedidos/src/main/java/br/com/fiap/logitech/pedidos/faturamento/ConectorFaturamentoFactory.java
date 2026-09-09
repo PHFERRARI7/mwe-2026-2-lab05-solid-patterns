@@ -2,6 +2,11 @@ package br.com.fiap.logitech.pedidos.faturamento;
 
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * TODO-2 (Factory Method): quem decide qual conector de faturamento usar.
  *
@@ -31,9 +36,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConectorFaturamentoFactory {
 
+    private final Map<String, ConectorFaturamento> conectores;
+
+    public ConectorFaturamentoFactory(List<ConectorFaturamento> conectores) {
+        this.conectores = conectores.stream()
+                .collect(Collectors.toMap(
+                        ConectorFaturamento::tipoClienteAtendido,
+                        Function.identity()));
+    }
+
     public ConectorFaturamento para(String tipoCliente) {
-        // TODO-2: devolva o conector registrado para este tipo de cliente.
-        throw new UnsupportedOperationException(
-                "TODO-2: a fábrica de conectores ainda não foi implementada");
+        ConectorFaturamento conector = conectores.get(tipoCliente);
+        if (conector == null) {
+            throw new ConectorNaoEncontradoException(tipoCliente);
+        }
+        return conector;
     }
 }

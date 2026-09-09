@@ -67,10 +67,19 @@ public class NumeradorNotaFiscalTests
         Assert.Equal(9, numero.Length);
     }
 
-    // TODO-6: escreva aqui o teste de concorrência descrito no comentário desta
-    // classe. Ele precisa disparar 100 emissões concorrentes, contar quantos
-    // números vieram repetidos e exigir zero duplicatas.
-    //
-    // Deixe o `using System.Collections.Concurrent;` do topo do arquivo: ele já
-    // está aqui para você usar a ConcurrentBag.
+    [Fact]
+    public void CentenasDeChamadasConcorrentesNaoGeramNumeroDuplicado()
+    {
+        NumeradorNotaFiscal numerador = NumeradorNotaFiscal.Instancia;
+        numerador.ReiniciarParaTeste();
+
+        ConcurrentBag<string> numeros = new();
+
+        Task.WhenAll(Enumerable.Range(1, 100)
+            .Select(_ => Task.Run(() => numeros.Add(numerador.Proximo())))).Wait();
+
+        int duplicadas = numeros.Count - numeros.Distinct().Count();
+
+        Assert.Equal(0, duplicadas);
+    }
 }

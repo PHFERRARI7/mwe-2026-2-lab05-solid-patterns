@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Faturamento.Api.Aplicacao;
 using Faturamento.Api.Dominio;
-using Faturamento.Api.Infraestrutura;
 using Xunit;
 
 namespace Faturamento.Tests;
@@ -31,26 +30,22 @@ public class FaturaServiceTests
     /// <para>O dicionário é concorrente de propósito: o defeito que o TODO-6 vai
     /// expor está no numerador de notas, e não no armazenamento do dublê.</para>
     /// </remarks>
-    private class FaturaRepositorioEmMemoria : EfFaturaRepository
+    private class FaturaRepositorioEmMemoria : IFaturaRepository
     {
         private readonly ConcurrentDictionary<string, Fatura> _dados = new();
 
-        public FaturaRepositorioEmMemoria() : base(null!)
-        {
-        }
-
-        public override Fatura Salvar(Fatura fatura)
+        public Fatura Salvar(Fatura fatura)
         {
             _dados[fatura.PedidoId] = fatura;
             return fatura;
         }
 
-        public override Fatura? PorPedido(string pedidoId)
+        public Fatura? PorPedido(string pedidoId)
         {
             return _dados.TryGetValue(pedidoId, out Fatura? fatura) ? fatura : null;
         }
 
-        public override IReadOnlyList<Fatura> Todas()
+        public IReadOnlyList<Fatura> Todas()
         {
             return _dados.Values.OrderBy(f => f.EmitidaEm).ToList();
         }

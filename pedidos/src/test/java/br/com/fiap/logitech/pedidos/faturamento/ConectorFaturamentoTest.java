@@ -42,6 +42,13 @@ class ConectorFaturamentoTest {
         assertEquals(0, solicitacao.prazoDias());
     }
 
-    // TODO-3: acrescente aqui o teste do conector do cliente CONTRATO.
-    // Meio de pagamento FATURA_MENSAL, valor cheio, prazo de 30 dias.
+    @Test
+    @DisplayName("cliente CONTRATO paga por FATURA_MENSAL, valor cheio, em 30 dias")
+    void clienteContratoPagaFaturaMensal() {
+        SolicitacaoFatura solicitacao = new ConectorContrato().montar(pedidoDe("CONTRATO"));
+
+        assertEquals("FATURA_MENSAL", solicitacao.meioPagamento());
+        assertEquals(0, new BigDecimal("1000.00").compareTo(solicitacao.valor()));
+        assertEquals(30, solicitacao.prazoDias());
+    }
 }

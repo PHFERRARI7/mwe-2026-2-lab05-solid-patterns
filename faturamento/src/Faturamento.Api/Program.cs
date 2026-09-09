@@ -21,9 +21,7 @@ string senha = Environment.GetEnvironmentVariable("LOGITECH_DB_PASSWORD") ?? "lo
 builder.Services.AddDbContext<FaturamentoDbContext>(opcoes =>
     opcoes.UseNpgsql(ConexaoPostgres.Traduzir(urlBanco, usuario, senha)));
 
-// TODO-4: quando IFaturaRepository existir, registre a implementação aqui:
-//   builder.Services.AddScoped<IFaturaRepository, EfFaturaRepository>();
-builder.Services.AddScoped<EfFaturaRepository>();
+builder.Services.AddScoped<IFaturaRepository, EfFaturaRepository>();
 builder.Services.AddScoped<FaturaService>();
 
 var app = builder.Build();

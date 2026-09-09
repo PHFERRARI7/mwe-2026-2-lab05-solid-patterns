@@ -20,7 +20,7 @@ namespace Faturamento.Api.Infraestrutura;
 /// dublê de teste herdar desta classe. Depois do TODO-4 esse truque some, e é
 /// justamente esse o ponto.</para>
 /// </remarks>
-public class EfFaturaRepository
+public class EfFaturaRepository : IFaturaRepository
 {
     private readonly FaturamentoDbContext _banco;
 

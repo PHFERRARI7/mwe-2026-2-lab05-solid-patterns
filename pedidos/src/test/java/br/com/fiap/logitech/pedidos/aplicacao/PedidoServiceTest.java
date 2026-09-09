@@ -2,12 +2,16 @@ package br.com.fiap.logitech.pedidos.aplicacao;
 
 import br.com.fiap.logitech.pedidos.dominio.NovoPedido;
 import br.com.fiap.logitech.pedidos.dominio.Pedido;
+import br.com.fiap.logitech.pedidos.dominio.PedidoRepository;
 import br.com.fiap.logitech.pedidos.dominio.SolicitacaoFatura;
 import br.com.fiap.logitech.pedidos.dominio.StatusPedido;
 import br.com.fiap.logitech.pedidos.faturamento.ClienteFaturamento;
+import br.com.fiap.logitech.pedidos.faturamento.ConectorBoleto;
+import br.com.fiap.logitech.pedidos.faturamento.ConectorCartaoCorporativo;
+import br.com.fiap.logitech.pedidos.faturamento.ConectorContrato;
+import br.com.fiap.logitech.pedidos.faturamento.ConectorFaturamentoFactory;
 import br.com.fiap.logitech.pedidos.faturamento.ConectorNaoEncontradoException;
 import br.com.fiap.logitech.pedidos.faturamento.FaturamentoIndisponivelException;
-import br.com.fiap.logitech.pedidos.infra.JpaPedidoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,12 +49,11 @@ class PedidoServiceTest {
      * {@code infra}. Os testes continuam passando, e agora o teste não sabe
      * mais que existe um ORM no projeto.</p>
      */
-    static class RepositorioEmMemoria extends JpaPedidoRepository {
+    static class RepositorioEmMemoria implements PedidoRepository {
 
         private final Map<String, Pedido> dados = new LinkedHashMap<>();
 
         RepositorioEmMemoria() {
-            super(null);
         }
 
         @Override
@@ -95,12 +98,9 @@ class PedidoServiceTest {
     void preparar() {
         repositorio = new RepositorioEmMemoria();
         faturamento = new FaturamentoFalso();
-        // TODO-2: quando a fábrica de conectores existir, ela é construída aqui
-        // com a lista de conectores e passada ao serviço:
-        //   var fabrica = new ConectorFaturamentoFactory(List.of(
-        //           new ConectorBoleto(), new ConectorCartaoCorporativo()));
-        //   servico = new PedidoService(repositorio, faturamento, fabrica);
-        servico = new PedidoService(repositorio, faturamento);
+        var fabrica = new ConectorFaturamentoFactory(List.of(
+                new ConectorBoleto(), new ConectorCartaoCorporativo(), new ConectorContrato()));
+        servico = new PedidoService(repositorio, faturamento, fabrica);
     }
 
     private NovoPedido novoPedido(String tipoCliente) {
@@ -143,6 +143,16 @@ class PedidoServiceTest {
     @DisplayName("tipo de cliente sem conector é recusado")
     void tipoDeClienteSemConectorEhRecusado() {
         assertThrows(ConectorNaoEncontradoException.class, () -> servico.criar(novoPedido("PRATA")));
+    }
+
+    @Test
+    @DisplayName("cliente CONTRATO: pedido é faturado por FATURA_MENSAL sem alterar PedidoService")
+    void clienteContratoFaturaPorFaturaMensal() {
+        Pedido pedido = servico.criar(novoPedido("CONTRATO"));
+
+        assertEquals("FATURA_MENSAL", faturamento.ultimaSolicitacao.meioPagamento());
+        assertEquals(StatusPedido.FATURADO, pedido.getStatus());
+        assertEquals(1, repositorio.todos().size());
     }
 
     @Test

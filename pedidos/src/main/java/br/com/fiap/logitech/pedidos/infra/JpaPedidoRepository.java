@@ -1,6 +1,7 @@
 package br.com.fiap.logitech.pedidos.infra;
 
 import br.com.fiap.logitech.pedidos.dominio.Pedido;
+import br.com.fiap.logitech.pedidos.dominio.PedidoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.Optional;
  * esse truque some, e é justamente esse o ponto.</p>
  */
 @Repository
-public class JpaPedidoRepository {
+public class JpaPedidoRepository implements PedidoRepository {
 
     private final PedidoJpa jpa;
 
